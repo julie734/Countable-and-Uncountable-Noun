@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Market Challenge - ESL Game</title>
+    <style>
+        /* CSS - Visual Design */
+        :root {
+            --primary-color: #ff9f43;
+            --secondary-color: #54a0ff;
+            --bg-color: #fef9e7;
+            --correct-color: #1dd1a1;
+            --wrong-color: #ee5253;
+            --text-color: #2d3436;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #game-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 30px;
+            box-shadow: 0 10px 0px #e67e22, 0 20px 25px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            border: 4px solid #f39c12;
+            position: relative;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0px #eee;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        #timer { color: var(--wrong-color); }
+        #score { color: var(--secondary-color); }
+
+        .question-box {
+            min-height: 150px;
+            margin: 20px 0;
+            padding: 20px;
+            border: 3px dashed #cbd5e0;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .food-emoji {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        .sentence {
+            font-size: 1.4rem;
+            font-weight: 500;
+        }
+
+        .highlight {
+            color: var(--primary-color);
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .game-btn {
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.1s;
+            color: white;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+            flex: 1;
+        }
+
+        .how-many { background-color: var(--secondary-color); }
+        .how-much { background-color: var(--primary-color); }
+
+        .game-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .game-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        #feedback {
+            height: 30px;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        /* Animations */
+        .pop { animation: pop 0.3s ease-out; }
+        @keyframes pop {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .shake { animation: shake 0.3s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Overlay for Game Over */
+        #restart-btn {
+            display: none;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: var(--correct-color);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <h1>🛒 Food Market Challenge</h1>
+    
+    <div class="stats-bar">
+        <span>Time: <span id="timer">60</span>s</span>
+        <span>Score: <span id="score">0</span></span>
+        <span>Streak: <span id="streak">0</span> 🔥</span>
+    </div>
+
+    <div class="question-box" id="question-box">
+        <div id="food-display" class="food-emoji">🍎</div>
+        <div class="sentence">
+            <span class="highlight">_____</span> <span id="food-name">apple</span> do you need?
+        </div>
+    </div>
+
+    <div class="button-group">
+        <button class="game-btn how-many" onclick="checkAnswer('many')">How many</button>
+        <button class="game-btn how-much" onclick="checkAnswer('much')">How much</button>
+    </div>
+
+    <div id="feedback"></div>
+    <button id="restart-btn" onclick="startGame()">Play Again!</button>
+</div>
+
+<script>
+    // Game Data
+    const foodItems = [
+        // Countable
+        { name: 'apple', type: 'many', emoji: '🍎', plural: 'apples' },
+        { name: 'banana', type: 'many', emoji: '🍌', plural: 'bananas' },
+        { name: 'orange', type: 'many', emoji: '🍊', plural: 'oranges' },
+        { name: 'egg', type: 'many', emoji: '🥚', plural: 'eggs' },
+        // Uncountable
+        { name: 'flour', type: 'much', emoji: '🌾', plural: 'flour' },
+        { name: 'salt', type: 'much', emoji: '🧂', plural: 'salt' },
+        { name: 'sugar', type: 'much', emoji: '🍬', plural: 'sugar' },
+        { name: 'butter', type: 'much', emoji: '🧈', plural: 'butter' },
+        { name: 'chocolate', type: 'much', emoji: '🍫', plural: 'chocolate' },
+        { name: 'coffee', type: 'much', emoji: '☕', plural: 'coffee' },
+        { name: 'tea', type: 'much', emoji: '🍵', plural: 'tea' },
+        { name: 'milk', type: 'much', emoji: '🥛', plural: 'milk' },
+        { name: 'water', type: 'much', emoji: '💧', plural: 'water' },
+        { name: 'boba', type: 'much', emoji: '🧋', plural: 'boba' }
+    ];
+
+    // Game State
+    let currentScore = 0;
+    let currentStreak = 0;
+    let timeLeft = 60;
+    let currentFood = {};
+    let gameActive = false;
+    let timerInterval;
+
+    // Elements
+    const foodNameEl = document.getElementById('food-name');
+    const foodEmojiEl = document.getElementById('food-display');
+    const scoreEl = document.getElementById('score');
+    const streakEl = document.getElementById('streak');
+    const timerEl = document.getElementById('timer');
+    const feedbackEl = document.getElementById('feedback');
+    const questionBox = document.getElementById('question-box');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function startGame() {
+        currentScore = 0;
+        currentStreak = 0;
+        timeLeft = 60;
+        gameActive = true;
+        
+        scoreEl.innerText = currentScore;
+        streakEl.innerText = currentStreak;
+        timerEl.innerText = timeLeft;
+        feedbackEl.innerText = "Get ready!";
+        restartBtn.style.display = 'none';
+        
+        generateQuestion();
+        
+        // Clear any existing timer
+        clearInterval(timerInterval);
+        
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timerEl.innerText = timeLeft;
+            if (timeLeft <= 0) endGame();
+        }, 1000);
+    }
+
+    function generateQuestion() {
+        if (!gameActive) return;
+        
+        // Pick random food
+        const randomIndex = Math.floor(Math.random() * foodItems.length);
+        currentFood = foodItems[randomIndex];
+        
+        // Update UI
+        // Note: For ESL learners, "How many" usually takes the plural form
+        foodNameEl.innerText = (currentFood.type === 'many') ? currentFood.plural : currentFood.name;
+        foodEmojiEl.innerText = currentFood.emoji;
+        
+        // Add a little entrance animation
+        questionBox.classList.remove('pop');
+        void questionBox.offsetWidth; // trigger reflow
+        questionBox.classList.add('pop');
+    }
+
+    function checkAnswer(playerChoice) {
+        if (!gameActive) return;
+
+        if (playerChoice === currentFood.type) {
+            // Correct
+            currentScore += 10 + (currentStreak * 2); // Streak bonus
+            currentStreak++;
+            showFeedback("Correct! 🌟", "#1dd1a1");
+        } else {
+            // Wrong
+            currentStreak = 0;
+            showFeedback("Try again! ❌", "#ee5253");
+            questionBox.classList.add('shake');
+            setTimeout(() => questionBox.classList.remove('shake'), 300);
+        }
+
+        scoreEl.innerText = currentScore;
+        streakEl.innerText = currentStreak;
+        generateQuestion();
+    }
+
+    function showFeedback(text, color) {
+        feedbackEl.innerText = text;
+        feedbackEl.style.color = color;
+    }
+
+    function endGame() {
+        gameActive = false;
+        clearInterval(timerInterval);
+        alert(`Game Over! Your final score is: ${currentScore}`);
+        feedbackEl.innerText = "Time's up!";
+        restartBtn.style.display = 'inline-block';
+    }
+
+    // Start game on load
+    window.onload = startGame;
+</script>
+
+</body>
+</html>

@@ -1,300 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food Market Challenge - ESL Game</title>
-    <style>
-        /* CSS - Visual Design */
-        :root {
-            --primary-color: #ff9f43;
-            --secondary-color: #54a0ff;
-            --bg-color: #fef9e7;
-            --correct-color: #1dd1a1;
-            --wrong-color: #ee5253;
-            --text-color: #2d3436;
-        }
+<meta charset="UTF-8">
+<title>Spelling Catch Game</title>
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-        }
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    text-align: center;
+    background: linear-gradient(#ffe0b2, #ffcc80);
+}
 
-        #game-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 30px;
-            box-shadow: 0 10px 0px #e67e22, 0 20px 25px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 500px;
-            text-align: center;
-            border: 4px solid #f39c12;
-            position: relative;
-        }
+h1 {
+    margin: 10px;
+}
 
-        h1 {
-            color: var(--primary-color);
-            font-size: 2rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 0px #eee;
-        }
+#gameArea {
+    position: relative;
+    width: 100%;
+    height: 70vh;
+    background: #fff3e0;
+    overflow: hidden;
+    border-top: 4px solid #ff9800;
+}
 
-        .stats-bar {
-            display: flex;
-            justify-content: space-around;
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            background: #fff3e0;
-            padding: 10px;
-            border-radius: 15px;
-        }
+/* CHARACTER */
+#player {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    background: #2196f3;
+    border-radius: 50%;
+}
 
-        #timer { color: var(--wrong-color); }
-        #score { color: var(--secondary-color); }
+/* LETTERS */
+.letter {
+    position: absolute;
+    font-size: 26px;
+    font-weight: bold;
+    color: #e65100;
+}
 
-        .question-box {
-            min-height: 150px;
-            margin: 20px 0;
-            padding: 20px;
-            border: 3px dashed #cbd5e0;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: transform 0.2s;
-        }
+#wordBox {
+    font-size: 28px;
+    margin: 10px;
+    letter-spacing: 10px;
+}
 
-        .food-emoji {
-            font-size: 4rem;
-            margin-bottom: 10px;
-        }
+#info {
+    font-size: 18px;
+}
 
-        .sentence {
-            font-size: 1.4rem;
-            font-weight: 500;
-        }
-
-        .highlight {
-            color: var(--primary-color);
-            font-weight: bold;
-            text-decoration: underline;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .game-btn {
-            padding: 15px 25px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.1s;
-            color: white;
-            box-shadow: 0 5px 0 rgba(0,0,0,0.2);
-            flex: 1;
-        }
-
-        .how-many { background-color: var(--secondary-color); }
-        .how-much { background-color: var(--primary-color); }
-
-        .game-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        .game-btn:active { transform: translateY(2px); box-shadow: none; }
-
-        #feedback {
-            height: 30px;
-            margin-top: 15px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            transition: all 0.3s;
-        }
-
-        /* Animations */
-        .pop { animation: pop 0.3s ease-out; }
-        @keyframes pop {
-            0% { transform: scale(0.8); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .shake { animation: shake 0.3s ease-in-out; }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        /* Overlay for Game Over */
-        #restart-btn {
-            display: none;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: var(--correct-color);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            cursor: pointer;
-        }
-    </style>
+button {
+    padding: 10px 20px;
+    background: #ff9800;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+</style>
 </head>
+
 <body>
 
-<div id="game-container">
-    <h1>🛒 Food Market Challenge</h1>
-    
-    <div class="stats-bar">
-        <span>Time: <span id="timer">60</span>s</span>
-        <span>Score: <span id="score">0</span></span>
-        <span>Streak: <span id="streak">0</span> 🔥</span>
-    </div>
+<h1>🎮 Catch & Spell!</h1>
 
-    <div class="question-box" id="question-box">
-        <div id="food-display" class="food-emoji">🍎</div>
-        <div class="sentence">
-            <span class="highlight">_____</span> <span id="food-name">apple</span> do you need?
-        </div>
-    </div>
+<div id="info">
+Word: <span id="hint"></span> |
+Time: <span id="time">30</span> |
+Score: <span id="score">0</span>
+</div>
 
-    <div class="button-group">
-        <button class="game-btn how-many" onclick="checkAnswer('many')">How many</button>
-        <button class="game-btn how-much" onclick="checkAnswer('much')">How much</button>
-    </div>
+<div id="wordBox"></div>
 
-    <div id="feedback"></div>
-    <button id="restart-btn" onclick="startGame()">Play Again!</button>
+<button onclick="startGame()">Start Game</button>
+
+<div id="gameArea">
+    <div id="player"></div>
 </div>
 
 <script>
-    // Game Data
-    const foodItems = [
-        // Countable
-        { name: 'apple', type: 'many', emoji: '🍎', plural: 'apples' },
-        { name: 'banana', type: 'many', emoji: '🍌', plural: 'bananas' },
-        { name: 'orange', type: 'many', emoji: '🍊', plural: 'oranges' },
-        { name: 'egg', type: 'many', emoji: '🥚', plural: 'eggs' },
-        // Uncountable
-        { name: 'flour', type: 'much', emoji: '🌾', plural: 'flour' },
-        { name: 'salt', type: 'much', emoji: '🧂', plural: 'salt' },
-        { name: 'sugar', type: 'much', emoji: '🍬', plural: 'sugar' },
-        { name: 'butter', type: 'much', emoji: '🧈', plural: 'butter' },
-        { name: 'chocolate', type: 'much', emoji: '🍫', plural: 'chocolate' },
-        { name: 'coffee', type: 'much', emoji: '☕', plural: 'coffee' },
-        { name: 'tea', type: 'much', emoji: '🍵', plural: 'tea' },
-        { name: 'milk', type: 'much', emoji: '🥛', plural: 'milk' },
-        { name: 'water', type: 'much', emoji: '💧', plural: 'water' },
-        { name: 'boba', type: 'much', emoji: '🧋', plural: 'boba' }
-    ];
+const words = ["clerk","juice","anything","treat","hot","dollar","togo"];
+let currentWord = "";
+let collected = "";
+let score = 0;
+let time = 30;
 
-    // Game State
-    let currentScore = 0;
-    let currentStreak = 0;
-    let timeLeft = 60;
-    let currentFood = {};
-    let gameActive = false;
-    let timerInterval;
+let gameInterval;
+let dropInterval;
 
-    // Elements
-    const foodNameEl = document.getElementById('food-name');
-    const foodEmojiEl = document.getElementById('food-display');
-    const scoreEl = document.getElementById('score');
-    const streakEl = document.getElementById('streak');
-    const timerEl = document.getElementById('timer');
-    const feedbackEl = document.getElementById('feedback');
-    const questionBox = document.getElementById('question-box');
-    const restartBtn = document.getElementById('restart-btn');
+const player = document.getElementById("player");
+let playerX = window.innerWidth / 2;
 
-    function startGame() {
-        currentScore = 0;
-        currentStreak = 0;
-        timeLeft = 60;
-        gameActive = true;
-        
-        scoreEl.innerText = currentScore;
-        streakEl.innerText = currentStreak;
-        timerEl.innerText = timeLeft;
-        feedbackEl.innerText = "Get ready!";
-        restartBtn.style.display = 'none';
-        
-        generateQuestion();
-        
-        // Clear any existing timer
-        clearInterval(timerInterval);
-        
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            timerEl.innerText = timeLeft;
-            if (timeLeft <= 0) endGame();
-        }, 1000);
-    }
+function startGame() {
+    score = 0;
+    time = 30;
+    document.getElementById("score").innerText = score;
+    document.getElementById("time").innerText = time;
 
-    function generateQuestion() {
-        if (!gameActive) return;
-        
-        // Pick random food
-        const randomIndex = Math.floor(Math.random() * foodItems.length);
-        currentFood = foodItems[randomIndex];
-        
-        // Update UI
-        // Note: For ESL learners, "How many" usually takes the plural form
-        foodNameEl.innerText = (currentFood.type === 'many') ? currentFood.plural : currentFood.name;
-        foodEmojiEl.innerText = currentFood.emoji;
-        
-        // Add a little entrance animation
-        questionBox.classList.remove('pop');
-        void questionBox.offsetWidth; // trigger reflow
-        questionBox.classList.add('pop');
-    }
+    nextWord();
 
-    function checkAnswer(playerChoice) {
-        if (!gameActive) return;
+    clearInterval(gameInterval);
+    clearInterval(dropInterval);
 
-        if (playerChoice === currentFood.type) {
-            // Correct
-            currentScore += 10 + (currentStreak * 2); // Streak bonus
-            currentStreak++;
-            showFeedback("Correct! 🌟", "#1dd1a1");
-        } else {
-            // Wrong
-            currentStreak = 0;
-            showFeedback("Try again! ❌", "#ee5253");
-            questionBox.classList.add('shake');
-            setTimeout(() => questionBox.classList.remove('shake'), 300);
+    gameInterval = setInterval(() => {
+        time--;
+        document.getElementById("time").innerText = time;
+        if (time <= 0) endGame();
+    }, 1000);
+
+    dropInterval = setInterval(dropLetter, 800);
+}
+
+function nextWord() {
+    currentWord = words[Math.floor(Math.random() * words.length)];
+    collected = "";
+    document.getElementById("hint").innerText = currentWord[0] + " _ _ _";
+    updateWordBox();
+}
+
+function updateWordBox() {
+    document.getElementById("wordBox").innerText = collected;
+}
+
+function dropLetter() {
+    const gameArea = document.getElementById("gameArea");
+    const letter = document.createElement("div");
+    letter.classList.add("letter");
+
+    const randomLetter = currentWord[Math.floor(Math.random() * currentWord.length)];
+    letter.innerText = randomLetter;
+
+    letter.style.left = Math.random() * (window.innerWidth - 30) + "px";
+    letter.style.top = "0px";
+
+    gameArea.appendChild(letter);
+
+    let fall = setInterval(() => {
+        letter.style.top = (letter.offsetTop + 5) + "px";
+
+        // COLLISION DETECTION
+        if (isColliding(letter, player)) {
+            collected += randomLetter;
+            updateWordBox();
+            letter.remove();
+            clearInterval(fall);
+
+            if (collected === currentWord) {
+                score += 10;
+                document.getElementById("score").innerText = score;
+                nextWord();
+            }
         }
 
-        scoreEl.innerText = currentScore;
-        streakEl.innerText = currentStreak;
-        generateQuestion();
+        if (letter.offsetTop > gameArea.clientHeight) {
+            letter.remove();
+            clearInterval(fall);
+        }
+
+    }, 30);
+}
+
+// COLLISION FUNCTION
+function isColliding(a, b) {
+    const aRect = a.getBoundingClientRect();
+    const bRect = b.getBoundingClientRect();
+
+    return !(
+        aRect.top > bRect.bottom ||
+        aRect.bottom < bRect.top ||
+        aRect.right < bRect.left ||
+        aRect.left > bRect.right
+    );
+}
+
+// MOVE CHARACTER
+document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") {
+        playerX -= 20;
+    } else if (e.key === "ArrowRight") {
+        playerX += 20;
     }
 
-    function showFeedback(text, color) {
-        feedbackEl.innerText = text;
-        feedbackEl.style.color = color;
-    }
+    player.style.left = playerX + "px";
+});
 
-    function endGame() {
-        gameActive = false;
-        clearInterval(timerInterval);
-        alert(`Game Over! Your final score is: ${currentScore}`);
-        feedbackEl.innerText = "Time's up!";
-        restartBtn.style.display = 'inline-block';
-    }
-
-    // Start game on load
-    window.onload = startGame;
+function endGame() {
+    clearInterval(gameInterval);
+    clearInterval(dropInterval);
+    alert("Game Over! Score: " + score);
+}
 </script>
 
 </body>
